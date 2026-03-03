@@ -1,0 +1,57 @@
+package dev.acobano.pcm.model.entity;
+
+import dev.acobano.pcm.model.enumerated.ProjectStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+
+@Entity
+@Table(name = "tbl_projects")
+public class ProjectEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "project_id", nullable = false)
+    private UUID id;
+
+    @Column(name = "project_name", nullable = false)
+    private String name;
+
+    @Column(name = "description")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "project_status")
+    private ProjectStatus status;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    //TO DO: Budget
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private CustomerEntity customer;
+
+    @ManyToOne()
+    @JoinColumn(name = "team_id")
+    private TeamEntity team;
+
+    @OneToMany(mappedBy = "project")
+    private Set<TaskEntity> tasks;
+}
