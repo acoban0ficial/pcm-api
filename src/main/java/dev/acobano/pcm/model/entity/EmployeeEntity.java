@@ -58,8 +58,7 @@ public class EmployeeEntity {
     )
     private Set<RoleEntity> roles;
 
-    @ManyToOne
-    @JoinColumn(name = "leader")
+    @OneToMany(mappedBy = "leader")
     private Set<TeamEntity> leadingTeams;
 
     @ManyToMany(mappedBy = "members")
