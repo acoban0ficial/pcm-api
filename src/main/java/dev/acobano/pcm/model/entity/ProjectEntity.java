@@ -1,7 +1,9 @@
 package dev.acobano.pcm.model.entity;
 
 import dev.acobano.pcm.model.enumerated.ProjectStatus;
+import dev.acobano.pcm.model.vo.BudgetVO;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,7 +44,8 @@ public class ProjectEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    //TO DO: Budget
+    @Embedded
+    private BudgetVO budget;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
