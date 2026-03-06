@@ -24,7 +24,7 @@ public class CustomerServiceImpl implements ICustomerService {
 
 
     @Override
-    public CustomerResponseDTO getCustomer(UUID customerId) {
+    public CustomerResponseDTO findCustomer(UUID customerId) {
         Optional<CustomerEntity> customerOpt = customerRepository.findById(customerId);
 
         if (customerOpt.isEmpty()) {
@@ -35,19 +35,9 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
-    public PagedModel<CustomerResponseDTO> listCustomers(Pageable pageable) {
-        Page<CustomerEntity> customerPage = customerRepository.findAll(pageable);
-
-        Page<CustomerResponseDTO> customerResponsePage = customerPage
+    public Page<CustomerResponseDTO> listCustomers(Pageable pageable) {
+        return customerRepository.findAll(pageable)
                 .map(CustomerMapper.INSTANCE::toResponseDTO);
-
-        return PagedModel.of(customerResponsePage.getContent(),
-                new PagedModel.PageMetadata(
-                        customerResponsePage.getSize(),
-                        customerResponsePage.getNumber(),
-                        customerResponsePage.getTotalElements(),
-                        customerResponsePage.getTotalPages()
-                ));
     }
 
     @Override

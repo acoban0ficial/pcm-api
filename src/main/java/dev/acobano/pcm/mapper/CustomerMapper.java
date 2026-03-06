@@ -19,6 +19,7 @@ public interface CustomerMapper {
     @Mapping(target = "birthDate", source = "birthDate")
     @Mapping(target = "isActive", source = "active")
     @Mapping(target = "address", source = "address")
+    @Mapping(target = "links", ignore = true)
     CustomerResponseDTO toResponseDTO(CustomerEntity entity);
 
 
