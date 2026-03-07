@@ -33,7 +33,7 @@ public class CustomerEntity {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "tax_id", nullable = false, unique = true)
+    @Column(name = "tax_id", nullable = false, unique = true, length = 9)
     private String taxId;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -42,7 +42,7 @@ public class CustomerEntity {
     @Column(name = "phone_number", length = 9)
     private String phoneNumber;
 
-    @Column(name = "birth_date")
+    @Column(name = "birth_date", columnDefinition = "DATE", nullable = false)
     private LocalDate birthDate;
 
     @Column(name = "is_active")

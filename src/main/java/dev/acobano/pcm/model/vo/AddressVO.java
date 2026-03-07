@@ -17,6 +17,9 @@ public class AddressVO {
     @Column(name = "street_name", nullable = false)
     private String streetName;
 
+    @Column(name = "street_number")
+    private String streetNumber;
+
     @Column(name = "street_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private StreetType streetType;
@@ -31,5 +34,6 @@ public class AddressVO {
     private String state;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "country", nullable = false)
     private Country country;
 }
