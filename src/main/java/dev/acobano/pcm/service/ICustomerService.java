@@ -13,4 +13,5 @@ public interface ICustomerService {
     Page<CustomerResponseDTO> listCustomers(Pageable pageable);
     CustomerResponseDTO saveCustomer(CustomerPostRequestDTO input);
     CustomerResponseDTO updateCustomer(UUID customerId, CustomerPutRequestDTO input);
+    void logicalDeleteCustomer(UUID customerId);
 }

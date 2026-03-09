@@ -117,4 +117,17 @@ public class CustomerServiceImpl implements ICustomerService {
             }
         }
     }
+
+    @Override
+    public void logicalDeleteCustomer(UUID customerId) {
+        Optional<CustomerEntity> customerOpt = customerRepository.findById(customerId);
+
+        if (customerOpt.isEmpty()) {
+            throw new CustomerNotFoundException("Customer not found with id: " + customerId);
+        }
+
+        CustomerEntity customer = customerOpt.get();
+        customer.setActive(Boolean.FALSE);
+        customerRepository.save(customer);
+    }
 }
