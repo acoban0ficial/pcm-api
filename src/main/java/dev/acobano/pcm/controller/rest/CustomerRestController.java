@@ -3,6 +3,7 @@ package dev.acobano.pcm.controller.rest;
 import dev.acobano.pcm.dto.request.CustomerPostRequestDTO;
 import dev.acobano.pcm.dto.request.CustomerPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
+import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.service.ICustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -99,6 +100,61 @@ public class CustomerRestController {
             pagedModel.add(WebMvcLinkBuilder
                     .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
                             .getAllCustomers(outputPage.nextPageable()))
+                    .withRel(IanaLinkRelations.NEXT));
+        }
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
+    @GetMapping(
+            value = "/{customerId}/projects",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<PagedModel<ProjectResponseDTO>> getCustomerProjects(
+            @PathVariable("customerId") String customerId,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<ProjectResponseDTO> outputPage = customerService.getCustomerProjects(pageable, UUID.fromString(customerId))
+                .map(dto -> {
+                    // Agregar links HATEOAS a cada proyecto:
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                                    .getProjectById(dto.getId()))
+                            .withSelfRel());
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                                    .getAllProjects(Pageable.unpaged()))
+                            .withRel(IanaLinkRelations.COLLECTION));
+                    return dto;
+                });
+
+        PagedModel<ProjectResponseDTO> pagedModel = PagedModel.of(
+                outputPage.getContent(),
+                new PagedModel.PageMetadata(
+                        outputPage.getSize(),
+                        outputPage.getNumber(),
+                        outputPage.getTotalElements(),
+                        outputPage.getTotalPages()
+                )
+        );
+
+        // Agregar links HATEOAS de la lista:
+        if (outputPage.hasPrevious()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
+                            .getCustomerProjects(customerId, outputPage.previousPageable()))
+                    .withRel(IanaLinkRelations.PREV));
+        }
+
+        pagedModel.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
+                        .getCustomerProjects(customerId, pageable))
+                .withSelfRel());
+
+        if (outputPage.hasNext()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
+                            .getCustomerProjects(customerId, outputPage.nextPageable()))
                     .withRel(IanaLinkRelations.NEXT));
         }
 

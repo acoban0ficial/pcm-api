@@ -3,20 +3,26 @@ package dev.acobano.pcm.service.impl;
 import dev.acobano.pcm.dto.request.CustomerPostRequestDTO;
 import dev.acobano.pcm.dto.request.CustomerPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
+import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.exception.CustomerNotFoundException;
 import dev.acobano.pcm.mapper.ICustomerMapper;
+import dev.acobano.pcm.mapper.IProjectMapper;
 import dev.acobano.pcm.model.entity.CustomerEntity;
+import dev.acobano.pcm.model.entity.ProjectEntity;
 import dev.acobano.pcm.repository.CustomerJpaRepository;
 import dev.acobano.pcm.service.ICustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +30,7 @@ public class CustomerServiceImpl implements ICustomerService {
 
     private final CustomerJpaRepository customerRepository;
     private final ICustomerMapper customerMapper;
+    private final IProjectMapper projectMapper;
 
 
     @Override
@@ -45,6 +52,32 @@ public class CustomerServiceImpl implements ICustomerService {
 
         return customerRepository.findAll(pageable)
                 .map(customerMapper::toResponseDTO);
+    }
+
+    @Override
+    public Page<ProjectResponseDTO> getCustomerProjects(Pageable pageable, UUID customerId) {
+        Optional<CustomerEntity> customerOpt = customerRepository.findById(customerId);
+
+        if (customerOpt.isEmpty()) {
+            throw new CustomerNotFoundException("Customer not found with id: " + customerId);
+        }
+
+        Set<ProjectEntity> projects = customerOpt.get().getProjects();
+
+        // Mapear ProjectEntity a ProjectResponseDTO
+        java.util.List<ProjectResponseDTO> projectResponses = projects.stream()
+                .map(projectMapper::toResponseDTO)
+                .collect(Collectors.toList());
+
+        // Calcular el rango de elementos para la página actual
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), projectResponses.size());
+
+        // Extraer los elementos de la página actual
+        java.util.List<ProjectResponseDTO> pageContent = projectResponses.subList(start, end);
+
+        // Crear y retornar el Page con los datos de paginación
+        return new PageImpl<>(pageContent, pageable, projectResponses.size());
     }
 
     @Override
