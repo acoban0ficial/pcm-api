@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
@@ -37,19 +38,19 @@ public class ProjectRestController {
     public ResponseEntity<ProjectResponseDTO> getProjectById(
             @PathVariable("projectId") String projectId
     ) {
-        ProjectResponseDTO output = projectService.findProject(UUID.fromString(projectId));
+        ProjectResponseDTO response = projectService.findProject(UUID.fromString(projectId));
 
         // Agregar links HATEOAS:
-        output.add(WebMvcLinkBuilder
+        response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
                         .getProjectById(projectId))
                 .withSelfRel());
-        output.add(WebMvcLinkBuilder
+        response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
                         .getAllProjects(Pageable.unpaged()))
                 .withRel(IanaLinkRelations.COLLECTION));
 
-        return ResponseEntity.ok(output);
+        return ResponseEntity.ok(response);
     }
 
 
@@ -111,6 +112,20 @@ public class ProjectRestController {
     public ResponseEntity<ProjectResponseDTO> createProject(
             @Valid @RequestBody ProjectPostRequestDTO request
     ) {
+        ProjectResponseDTO response = projectService.saveProject(request);
 
+        // Agregar links HATEOAS:
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getProjectById(response.getId()))
+                .withSelfRel());
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getAllProjects(Pageable.unpaged()))
+                .withRel(IanaLinkRelations.COLLECTION));
+
+        return ResponseEntity.created(
+                    URI.create("/api/v1/projects/" + response.getId())
+                ).body(response);
     }
 }
