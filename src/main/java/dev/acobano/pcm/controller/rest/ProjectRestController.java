@@ -1,8 +1,10 @@
 package dev.acobano.pcm.controller.rest;
 
+import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.service.IProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -98,5 +102,15 @@ public class ProjectRestController {
         }
 
         return ResponseEntity.ok(pagedModel);
+    }
+
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ProjectResponseDTO> createProject(
+            @Valid @RequestBody ProjectPostRequestDTO request
+    ) {
+
     }
 }

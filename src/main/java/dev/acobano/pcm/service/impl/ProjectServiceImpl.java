@@ -1,5 +1,6 @@
 package dev.acobano.pcm.service.impl;
 
+import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.exception.CustomerNotFoundException;
 import dev.acobano.pcm.exception.ProjectNotFoundException;
@@ -43,5 +44,10 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         return projectsPage.map(projectMapper::toResponseDTO);
+    }
+
+    @Override
+    public ProjectResponseDTO saveProject(ProjectPostRequestDTO input) {
+        return null;
     }
 }
