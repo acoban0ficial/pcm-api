@@ -1,7 +1,6 @@
 package dev.acobano.pcm.controller.rest;
 
 import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
-import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.service.IProjectService;
 import jakarta.validation.Valid;
