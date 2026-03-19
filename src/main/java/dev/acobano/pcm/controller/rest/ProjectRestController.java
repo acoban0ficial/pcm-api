@@ -1,6 +1,7 @@
 package dev.acobano.pcm.controller.rest;
 
 import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
+import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.service.IProjectService;
 import jakarta.validation.Valid;
@@ -104,6 +105,25 @@ public class ProjectRestController {
 
         return ResponseEntity.ok(pagedModel);
     }
+
+    @GetMapping(
+            value = "/{projectId}/customer",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CustomerResponseDTO> getProjectCustomer(
+            @PathVariable("projectId") UUID projectId
+    ) {
+        CustomerResponseDTO response = projectService.getProjectCustomer(projectId);
+
+        // Agregar link HATEOAS al cliente:
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
+                        .getCustomerById(response.getId()))
+                .withSelfRel());
+
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,

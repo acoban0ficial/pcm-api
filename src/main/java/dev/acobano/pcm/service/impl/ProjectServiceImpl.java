@@ -2,9 +2,10 @@ package dev.acobano.pcm.service.impl;
 
 import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
+import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
-import dev.acobano.pcm.exception.CustomerNotFoundException;
 import dev.acobano.pcm.exception.ProjectNotFoundException;
+import dev.acobano.pcm.mapper.ICustomerMapper;
 import dev.acobano.pcm.mapper.IProjectMapper;
 import dev.acobano.pcm.model.entity.ProjectEntity;
 import dev.acobano.pcm.repository.CustomerJpaRepository;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +28,7 @@ public class ProjectServiceImpl implements IProjectService {
     private final ProjectJpaRepository projectRepository;
     private final IProjectMapper projectMapper;
     private final CustomerJpaRepository customerRepository;
+    private final ICustomerMapper customerMapper;
     private final TeamJpaRepository teamRepository;
 
     @Override
@@ -53,6 +54,17 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
+    public CustomerResponseDTO getProjectCustomer(UUID projectId) {
+        Optional<ProjectEntity> projectOpt = projectRepository.findById(projectId);
+
+        if (projectOpt.isEmpty()) {
+            throw new ProjectNotFoundException("Project not found with ID: " + projectId);
+        }
+
+        return customerMapper.toResponseDTO(projectOpt.get().getCustomer());
+    }
+
+    @Override
     public ProjectResponseDTO saveProject(ProjectPostRequestDTO input) {
         return projectMapper.toResponseDTO(
                 projectRepository.save(
@@ -71,7 +83,9 @@ public class ProjectServiceImpl implements IProjectService {
 
         ProjectEntity project = projectOpt.get();
         updateProjectFields(input, project);
-        return null;
+        return projectMapper.toResponseDTO(
+                projectRepository.save(project)
+        );
     }
 
     private void updateProjectFields(ProjectPutRequestDTO dto, ProjectEntity entity) {
