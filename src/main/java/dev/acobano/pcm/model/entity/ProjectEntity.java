@@ -52,6 +52,9 @@ public class ProjectEntity {
     @Embedded
     private BudgetVO budget;
 
+    @Column(name = "is_active")
+    private Boolean active;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private CustomerEntity customer;

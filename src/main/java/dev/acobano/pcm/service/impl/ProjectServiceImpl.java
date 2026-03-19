@@ -120,6 +120,14 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public void logicalDeleteProject(UUID projectId) {
+        Optional<ProjectEntity> projectOpt = projectRepository.findById(projectId);
 
+        if (projectOpt.isEmpty()) {
+            throw new ProjectNotFoundException("Project not found with ID: " + projectId);
+        }
+
+        ProjectEntity project = projectOpt.get();
+        project.setActive(Boolean.FALSE);
+        projectRepository.save(project);
     }
 }

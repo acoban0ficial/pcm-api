@@ -17,18 +17,22 @@ public interface IProjectMapper {
     @Mapping(target = "endDate", source = "endDate")
     @Mapping(target = "budget.price", source = "budgetPrice")
     @Mapping(target = "budget.currency", source = "budgetCurrency")
+    @Mapping(target = "active", constant = "true")
     @Mapping(target = "customer.id", source = "customerId")
     @Mapping(target = "team.id", source = "assignedTeamId")
     @Mapping(target = "tasks", ignore = true)
     ProjectEntity toEntity(ProjectPostRequestDTO dto);
 
-    @Mapping(target = "id", expression = "java(entity.getId().toString())")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "projectName", source = "name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "status", source = "status")
     @Mapping(target = "startDate", source = "startDate")
     @Mapping(target = "endDate", source = "endDate")
     @Mapping(target = "budget", source = "budget")
+    @Mapping(target = "isActive", source = "active")
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "assignedTeamId", source = "team.id")
     @Mapping(target = "links", ignore = true)
     ProjectResponseDTO toResponseDTO(ProjectEntity entity);
 }
