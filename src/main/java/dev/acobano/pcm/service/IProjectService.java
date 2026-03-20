@@ -4,6 +4,7 @@ import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,6 +14,7 @@ public interface IProjectService {
     ProjectResponseDTO findProject(UUID projectId);
     Page<ProjectResponseDTO> listProjects(Pageable pageable);
     CustomerResponseDTO getProjectCustomer(UUID projectId);
+    TeamResponseDTO getProjectTeam(UUID projectId);
     ProjectResponseDTO saveProject(ProjectPostRequestDTO input);
     ProjectResponseDTO updateProject(UUID projectId, ProjectPutRequestDTO input);
     void logicalDeleteProject(UUID projectId);

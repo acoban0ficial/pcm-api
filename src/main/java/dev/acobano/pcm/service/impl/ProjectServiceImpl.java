@@ -4,9 +4,11 @@ import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.exception.ProjectNotFoundException;
 import dev.acobano.pcm.mapper.ICustomerMapper;
 import dev.acobano.pcm.mapper.IProjectMapper;
+import dev.acobano.pcm.mapper.ITeamMapper;
 import dev.acobano.pcm.model.entity.ProjectEntity;
 import dev.acobano.pcm.repository.CustomerJpaRepository;
 import dev.acobano.pcm.repository.ProjectJpaRepository;
@@ -30,6 +32,7 @@ public class ProjectServiceImpl implements IProjectService {
     private final CustomerJpaRepository customerRepository;
     private final ICustomerMapper customerMapper;
     private final TeamJpaRepository teamRepository;
+    private final ITeamMapper teamMapper;
 
     @Override
     public ProjectResponseDTO findProject(UUID projectId) {
@@ -62,6 +65,17 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         return customerMapper.toResponseDTO(projectOpt.get().getCustomer());
+    }
+
+    @Override
+    public TeamResponseDTO getProjectTeam(UUID projectId) {
+        Optional<ProjectEntity> projectOpt = projectRepository.findById(projectId);
+
+        if (projectOpt.isEmpty()) {
+            throw new ProjectNotFoundException("Project not found with ID: " + projectId);
+        }
+
+        return teamMapper.toResponseDTO(projectOpt.get().getTeam());
     }
 
     @Override

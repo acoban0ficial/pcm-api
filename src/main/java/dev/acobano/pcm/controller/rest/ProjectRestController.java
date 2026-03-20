@@ -3,6 +3,7 @@ package dev.acobano.pcm.controller.rest;
 import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.service.IProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,20 +87,20 @@ public class ProjectRestController {
         // Agregar links HATEOAS de la lista:
         if (outputPage.hasPrevious()) {
             pagedModel.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
-                            .getAllCustomers(outputPage.previousPageable()))
+                    .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                            .getAllProjects(outputPage.previousPageable()))
                     .withRel(IanaLinkRelations.PREV));
         }
 
         pagedModel.add(WebMvcLinkBuilder
-                .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
-                        .getAllCustomers(pageable))
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getAllProjects(pageable))
                 .withSelfRel());
 
         if (outputPage.hasNext()) {
             pagedModel.add(WebMvcLinkBuilder
-                    .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
-                            .getAllCustomers(outputPage.nextPageable()))
+                    .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                            .getAllProjects(outputPage.nextPageable()))
                     .withRel(IanaLinkRelations.NEXT));
         }
 
@@ -124,6 +125,23 @@ public class ProjectRestController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(
+            value = "/{projectId}/team",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    private ResponseEntity<TeamResponseDTO> getProjectAssignedTeam(
+            @PathVariable("projectId") UUID projectId
+    ) {
+        TeamResponseDTO response = projectService.getProjectTeam(projectId);
+
+        // Agregar link HATEOAS al equipo:
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                        .getTeamById(UUID.fromString(response.getId())))
+                .withSelfRel());
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
