@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>dev.acobano</groupId>
 	<artifactId>pcm-api</artifactId>
-	<version>0.4.9</version>
+	<version>0.4.10</version>
 	<name>pcm-api</name>
 	<description>Proyecto desarrollado en el framework Spring en el que se describe el comportamiento de una aplicación API RESTful que simula el comportamiento de un negocio de gestión de proyectos y clientes.</description>
 	<url/>
