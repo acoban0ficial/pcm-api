@@ -1,6 +1,7 @@
 package dev.acobano.pcm.controller.rest;
 
 import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
+import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
@@ -165,6 +166,25 @@ public class ProjectRestController {
         return ResponseEntity.created(
                     URI.create("/api/v1/projects/" + response.getId())
                 ).body(response);
+    }
+
+    public ResponseEntity<ProjectResponseDTO> updateProject(
+            @PathVariable("projectId") UUID projectId,
+            @Valid @RequestBody ProjectPutRequestDTO request
+    ) {
+        ProjectResponseDTO response = projectService.updateProject(projectId, request);
+
+        // Agregar links HATEOAS:
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getProjectById(response.getId()))
+                .withSelfRel());
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getAllProjects(Pageable.unpaged()))
+                .withRel(IanaLinkRelations.COLLECTION));
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping(value = "/{customerId}")
