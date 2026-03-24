@@ -1,5 +1,6 @@
 package dev.acobano.pcm.service.impl;
 
+import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.exception.TeamNotFoundException;
 import dev.acobano.pcm.mapper.ITeamMapper;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,5 +43,17 @@ public class TeamServiceImpl implements ITeamService {
         }
 
         return teamsPage.map(teamMapper::toResponseDTO);
+    }
+
+    @Override
+    public TeamResponseDTO saveTeam(TeamPostRequestDTO input) {
+        TeamEntity entity = teamMapper.toEntity(input);
+        LocalDateTime now = LocalDateTime.now();
+        entity.setCreationDate(now);
+        entity.setLastUpdateDate(now);
+
+        return teamMapper.toResponseDTO(
+                teamRepository.save(entity)
+        );
     }
 }

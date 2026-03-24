@@ -8,21 +8,22 @@ import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeamResponseDTO extends RepresentationModel<TeamResponseDTO> {
-    private String id;
-    private String name;
+    private UUID id;
+    private String teamName;
     private String description;
-    private LocalDateTime creationDate;
-    private LocalDateTime lastUpdateDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private boolean isActive;
 
-    private String employeeLeaderId;
+    private UUID employeeLeaderId;
 }

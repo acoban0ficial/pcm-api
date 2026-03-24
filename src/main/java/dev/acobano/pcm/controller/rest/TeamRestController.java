@@ -1,8 +1,9 @@
 package dev.acobano.pcm.controller.rest;
 
-import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.service.ITeamService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,9 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
@@ -42,7 +46,7 @@ public class TeamRestController {
         // Agregar link HATEOAS al equipo:
         response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
-                        .getTeamById(UUID.fromString(response.getId())))
+                        .getTeamById(response.getId()))
                 .withSelfRel());
         response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
@@ -59,7 +63,7 @@ public class TeamRestController {
                     // Agregar links HATEOAS a cada equipo:
                     dto.add(WebMvcLinkBuilder
                             .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
-                                    .getTeamById(UUID.fromString(dto.getId())))
+                                    .getTeamById(dto.getId()))
                             .withSelfRel());
                     dto.add(WebMvcLinkBuilder
                             .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
@@ -98,5 +102,29 @@ public class TeamRestController {
                     .withRel(IanaLinkRelations.NEXT));
         }
         return ResponseEntity.ok(pagedModel);
+    }
+
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<TeamResponseDTO> createTeam(
+            @Valid @RequestBody TeamPostRequestDTO request
+            ) {
+        TeamResponseDTO response = teamService.saveTeam(request);
+
+        // Agregar link HATEOAS al equipo creado:
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                        .getTeamById(response.getId()))
+                .withSelfRel());
+        response.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                        .getAllTeams(Pageable.unpaged()))
+                .withRel(IanaLinkRelations.COLLECTION));
+
+        return ResponseEntity.created(
+                URI.create("/api/v1/teams/".concat(response.getId().toString()))
+        ).body(response);
     }
 }

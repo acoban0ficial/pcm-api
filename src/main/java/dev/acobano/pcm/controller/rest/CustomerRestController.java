@@ -167,21 +167,21 @@ public class CustomerRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<CustomerResponseDTO> createCustomer(
-            @Valid @RequestBody CustomerPostRequestDTO input
+            @Valid @RequestBody CustomerPostRequestDTO request
     ) {
-        CustomerResponseDTO output = customerService.saveCustomer(input);
+        CustomerResponseDTO response = customerService.saveCustomer(request);
 
         // Agregar links HATEOAS:
-        output.add(WebMvcLinkBuilder
+        response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
-                        .getCustomerById(output.getId()))
+                        .getCustomerById(response.getId()))
                 .withSelfRel());
-        output.add(WebMvcLinkBuilder
+        response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(CustomerRestController.class)
                         .getAllCustomers(Pageable.unpaged()))
                 .withRel(IanaLinkRelations.COLLECTION));
 
-        return ResponseEntity.ok(output);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping(
