@@ -2,9 +2,11 @@ package dev.acobano.pcm.service.impl;
 
 import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.request.TeamPutRequestDTO;
+import dev.acobano.pcm.dto.response.EmployeeResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.exception.EmployeeNotFoundException;
 import dev.acobano.pcm.exception.TeamNotFoundException;
+import dev.acobano.pcm.mapper.IEmployeeMapper;
 import dev.acobano.pcm.mapper.ITeamMapper;
 import dev.acobano.pcm.model.entity.EmployeeEntity;
 import dev.acobano.pcm.model.entity.TeamEntity;
@@ -28,6 +30,7 @@ public class TeamServiceImpl implements ITeamService {
     private final TeamJpaRepository teamRepository;
     private final ITeamMapper teamMapper;
     private final EmployeeJpaRepository employeeRepository;
+    private final IEmployeeMapper employeeMapper;
 
     @Override
     public TeamResponseDTO findTeam(UUID teamId) {
@@ -49,6 +52,19 @@ public class TeamServiceImpl implements ITeamService {
         }
 
         return teamsPage.map(teamMapper::toResponseDTO);
+    }
+
+    @Override
+    public EmployeeResponseDTO getTeamLeader(UUID teamId) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: " + teamId.toString());
+        }
+
+        return employeeMapper.toResponseDTO(
+                teamOpt.get().getLeader()
+        );
     }
 
     @Override

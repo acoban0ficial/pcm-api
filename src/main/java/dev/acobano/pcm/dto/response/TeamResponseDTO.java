@@ -26,4 +26,13 @@ public class TeamResponseDTO extends RepresentationModel<TeamResponseDTO> {
     private boolean isActive;
 
     private UUID employeeLeaderId;
+
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
 }
