@@ -3,6 +3,7 @@ package dev.acobano.pcm.service.impl;
 import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.request.TeamPutRequestDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
+import dev.acobano.pcm.exception.EmployeeNotFoundException;
 import dev.acobano.pcm.exception.TeamNotFoundException;
 import dev.acobano.pcm.mapper.ITeamMapper;
 import dev.acobano.pcm.model.entity.EmployeeEntity;
@@ -92,7 +93,8 @@ public class TeamServiceImpl implements ITeamService {
                 Optional<EmployeeEntity> leaderOpt = employeeRepository.findById(dto.employeeLeaderId());
 
                 if (leaderOpt.isEmpty()) {
-                    throw new TeamNotFoundException("Employee leader not found with ID: " + dto.employeeLeaderId().toString());
+                    throw new EmployeeNotFoundException("Employee leader not found with ID: "
+                            .concat(dto.employeeLeaderId().toString()));
                 }
 
                 entity.setLeader(leaderOpt.get());
@@ -100,5 +102,20 @@ public class TeamServiceImpl implements ITeamService {
 
             entity.setLastUpdateDate(LocalDateTime.now());
         }
+    }
+
+
+    @Override
+    public void logicalDeleteTeam(UUID teamId) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: ".concat(teamId.toString()));
+        }
+
+        TeamEntity team = teamOpt.get();
+        team.setActive(Boolean.FALSE);
+        team.setLastUpdateDate(LocalDateTime.now());
+        teamRepository.save(team);
     }
 }

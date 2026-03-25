@@ -13,5 +13,5 @@ public interface ITeamService {
     Page<TeamResponseDTO> listTeams(Pageable pageable);
     TeamResponseDTO saveTeam(TeamPostRequestDTO input);
     TeamResponseDTO updateTeam(UUID teamId, TeamPutRequestDTO input);
-    //void logicalDeleteTeam(UUID teamId);
+    void logicalDeleteTeam(UUID teamId);
 }
