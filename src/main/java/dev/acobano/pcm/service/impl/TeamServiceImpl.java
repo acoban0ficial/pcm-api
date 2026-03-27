@@ -15,12 +15,15 @@ import dev.acobano.pcm.repository.TeamJpaRepository;
 import dev.acobano.pcm.service.ITeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -65,6 +68,30 @@ public class TeamServiceImpl implements ITeamService {
         return employeeMapper.toResponseDTO(
                 teamOpt.get().getLeader()
         );
+    }
+
+    @Override
+    public Page<EmployeeResponseDTO> getTeamMembers(UUID teamId, Pageable pageable) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: " + teamId.toString());
+        }
+
+        Set<EmployeeEntity> members = teamOpt.get().getMembers();
+        List<EmployeeResponseDTO> responseList = members.stream()
+                .map(employeeMapper::toResponseDTO)
+                .toList();
+
+        // Calcular el rango de elementos para la página actual
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseList.size());
+
+        // Extraer los elementos de la página actual
+        List<EmployeeResponseDTO> pageContent = responseList.subList(start, end);
+
+        // Crear y retornar el Page con los datos de paginación
+        return new PageImpl<>(pageContent, pageable, responseList.size());
     }
 
     @Override

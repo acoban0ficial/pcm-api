@@ -13,6 +13,7 @@ public interface ITeamService {
     TeamResponseDTO findTeam(UUID teamId);
     Page<TeamResponseDTO> listTeams(Pageable pageable);
     EmployeeResponseDTO getTeamLeader(UUID teamId);
+    Page<EmployeeResponseDTO> getTeamMembers(UUID teamId, Pageable pageable);
     TeamResponseDTO saveTeam(TeamPostRequestDTO input);
     TeamResponseDTO updateTeam(UUID teamId, TeamPutRequestDTO input);
     void logicalDeleteTeam(UUID teamId);

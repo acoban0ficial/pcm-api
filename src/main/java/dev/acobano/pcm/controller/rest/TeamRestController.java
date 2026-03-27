@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -61,7 +62,7 @@ public class TeamRestController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedModel<TeamResponseDTO>> getAllTeams(Pageable pageable) {
+    public ResponseEntity<PagedModel<TeamResponseDTO>> getAllTeams(@PageableDefault Pageable pageable) {
         Page<TeamResponseDTO> outputPage = teamService.listTeams(pageable)
                 .map(dto -> {
                     // Agregar links HATEOAS a cada equipo:
@@ -130,6 +131,64 @@ public class TeamRestController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(
+            value = "/{teamId}/members",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<PagedModel<EmployeeResponseDTO>> getTeamMembers(
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("teamId") UUID teamId,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<EmployeeResponseDTO> outputPage = teamService.getTeamMembers(teamId, pageable)
+                .map(dto -> {
+                    // Agregar links HATEOAS a cada miembro:
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(EmployeeRestController.class)
+                                    .getEmployeeById(dto.getId()))
+                            .withSelfRel());
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                                    .getTeamMembers(teamId, pageable))
+                            .withRel(IanaLinkRelations.COLLECTION));
+                    return dto;
+                });
+
+        PagedModel<EmployeeResponseDTO> pagedModel = PagedModel.of(
+                outputPage.getContent(),
+                new PagedModel.PageMetadata(
+                        outputPage.getSize(),
+                        outputPage.getNumber(),
+                        outputPage.getTotalElements(),
+                        outputPage.getTotalPages()
+                )
+        );
+
+        // Agregar links HATEOAS de la lista:
+        if (outputPage.hasPrevious()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                            .getTeamMembers(teamId, outputPage.previousPageable()))
+                    .withRel(IanaLinkRelations.PREV));
+        }
+
+        pagedModel.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                        .getTeamMembers(teamId, pageable))
+                .withSelfRel());
+
+        if (outputPage.hasNext()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                            .getTeamMembers(teamId, outputPage.nextPageable()))
+                    .withRel(IanaLinkRelations.NEXT));
+        }
+        return ResponseEntity.ok(pagedModel);
+    }
+
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -184,6 +243,10 @@ public class TeamRestController {
 
     @DeleteMapping(value = "/{teamId}")
     public ResponseEntity<Void> deleteProject(
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
             @PathVariable("teamId") UUID teamId
     ) {
         teamService.logicalDeleteTeam(teamId);
