@@ -15,6 +15,7 @@ public interface ITeamService {
     EmployeeResponseDTO getTeamLeader(UUID teamId);
     Page<EmployeeResponseDTO> getTeamMembers(UUID teamId, Pageable pageable);
     TeamResponseDTO saveTeam(TeamPostRequestDTO input);
+    void addTeamMember(UUID teamId, UUID employeeId);
     TeamResponseDTO updateTeam(UUID teamId, TeamPutRequestDTO input);
     void logicalDeleteTeam(UUID teamId);
 }

@@ -213,6 +213,23 @@ public class TeamRestController {
         ).body(response);
     }
 
+    @PostMapping(value = "/{teamId}/members/{employeeId}")
+    public ResponseEntity<Void> addTeamMember(
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("teamId") UUID teamId,
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("employeeId") UUID employeeId
+    ) {
+        teamService.addTeamMember(teamId, employeeId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping(
             value = "/{teamId}",
             consumes = MediaType.APPLICATION_JSON_VALUE,

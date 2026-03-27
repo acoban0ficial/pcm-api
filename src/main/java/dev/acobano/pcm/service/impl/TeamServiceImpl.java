@@ -107,6 +107,30 @@ public class TeamServiceImpl implements ITeamService {
     }
 
     @Override
+    public void addTeamMember(UUID teamId, UUID employeeId) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: " + teamId.toString());
+        }
+
+        Optional<EmployeeEntity> employeeOpt = employeeRepository.findById(employeeId);
+        if (employeeOpt.isEmpty()) {
+            throw new EmployeeNotFoundException("Employee not found with ID: " + employeeId.toString());
+        }
+
+        TeamEntity team = teamOpt.get();
+        EmployeeEntity member = employeeOpt.get();
+        if (team.getMembers().contains(member)) {
+            throw new EmployeeNotFoundException("Employee with ID: " + employeeId.toString() +
+                    " is already a member of the team with ID: " + teamId.toString());
+        }
+
+        team.getMembers().add(member);
+        team.setLastUpdateDate(LocalDateTime.now());
+        teamRepository.save(team);
+    }
+
+    @Override
     public TeamResponseDTO updateTeam(UUID teamId, TeamPutRequestDTO input) {
         Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
 
