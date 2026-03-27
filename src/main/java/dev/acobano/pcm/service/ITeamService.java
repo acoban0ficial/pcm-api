@@ -18,4 +18,5 @@ public interface ITeamService {
     void addTeamMember(UUID teamId, UUID employeeId);
     TeamResponseDTO updateTeam(UUID teamId, TeamPutRequestDTO input);
     void logicalDeleteTeam(UUID teamId);
+    void removeTeamMember(UUID teamId, UUID employeeId);
 }

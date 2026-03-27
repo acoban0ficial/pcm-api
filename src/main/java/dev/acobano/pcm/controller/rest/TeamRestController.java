@@ -259,7 +259,7 @@ public class TeamRestController {
     }
 
     @DeleteMapping(value = "/{teamId}")
-    public ResponseEntity<Void> deleteProject(
+    public ResponseEntity<Void> deleteTeam(
             @Pattern(
                     regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                     message = "This field must be in UUID format"
@@ -267,6 +267,23 @@ public class TeamRestController {
             @PathVariable("teamId") UUID teamId
     ) {
         teamService.logicalDeleteTeam(teamId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping(value = "/{teamId}/members/{employeeId}")
+    public ResponseEntity<Void> removeTeamMember(
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("teamId") UUID teamId,
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("employeeId") UUID employeeId
+    ) {
+        teamService.removeTeamMember(teamId, employeeId);
         return ResponseEntity.noContent().build();
     }
 }

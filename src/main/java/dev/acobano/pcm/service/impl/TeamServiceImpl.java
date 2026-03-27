@@ -185,4 +185,28 @@ public class TeamServiceImpl implements ITeamService {
         team.setLastUpdateDate(LocalDateTime.now());
         teamRepository.save(team);
     }
+
+    @Override
+    public void removeTeamMember(UUID teamId, UUID employeeId) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: " + teamId.toString());
+        }
+
+        Optional<EmployeeEntity> employeeOpt = employeeRepository.findById(employeeId);
+        if (employeeOpt.isEmpty()) {
+            throw new EmployeeNotFoundException("Employee not found with ID: " + employeeId.toString());
+        }
+
+        TeamEntity team = teamOpt.get();
+        EmployeeEntity member = employeeOpt.get();
+        if (!team.getMembers().contains(member)) {
+            throw new EmployeeNotFoundException("Employee with ID: " + employeeId.toString() +
+                    " is not a member of the team with ID: " + teamId.toString());
+        }
+
+        team.getMembers().remove(member);
+        team.setLastUpdateDate(LocalDateTime.now());
+        teamRepository.save(team);
+    }
 }
