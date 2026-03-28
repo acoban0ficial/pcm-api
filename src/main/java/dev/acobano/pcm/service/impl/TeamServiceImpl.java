@@ -3,12 +3,15 @@ package dev.acobano.pcm.service.impl;
 import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.request.TeamPutRequestDTO;
 import dev.acobano.pcm.dto.response.EmployeeResponseDTO;
+import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.exception.EmployeeNotFoundException;
 import dev.acobano.pcm.exception.TeamNotFoundException;
 import dev.acobano.pcm.mapper.IEmployeeMapper;
+import dev.acobano.pcm.mapper.IProjectMapper;
 import dev.acobano.pcm.mapper.ITeamMapper;
 import dev.acobano.pcm.model.entity.EmployeeEntity;
+import dev.acobano.pcm.model.entity.ProjectEntity;
 import dev.acobano.pcm.model.entity.TeamEntity;
 import dev.acobano.pcm.repository.EmployeeJpaRepository;
 import dev.acobano.pcm.repository.TeamJpaRepository;
@@ -34,6 +37,7 @@ public class TeamServiceImpl implements ITeamService {
     private final ITeamMapper teamMapper;
     private final EmployeeJpaRepository employeeRepository;
     private final IEmployeeMapper employeeMapper;
+    private final IProjectMapper projectMapper;
 
     @Override
     public TeamResponseDTO findTeam(UUID teamId) {
@@ -89,6 +93,30 @@ public class TeamServiceImpl implements ITeamService {
 
         // Extraer los elementos de la página actual
         List<EmployeeResponseDTO> pageContent = responseList.subList(start, end);
+
+        // Crear y retornar el Page con los datos de paginación
+        return new PageImpl<>(pageContent, pageable, responseList.size());
+    }
+
+    @Override
+    public Page<ProjectResponseDTO> getTeamProjects(UUID teamId, Pageable pageable) {
+        Optional<TeamEntity> teamOpt = teamRepository.findById(teamId);
+
+        if (teamOpt.isEmpty()) {
+            throw new TeamNotFoundException("Team not found with ID: " + teamId.toString());
+        }
+
+        Set<ProjectEntity> projects = teamOpt.get().getProjects();
+        List<ProjectResponseDTO> responseList = projects.stream()
+                .map(projectMapper::toResponseDTO)
+                .toList();
+
+        // Calcular el rango de elementos para la página actual
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseList.size());
+
+        // Extraer los elementos de la página actual
+        List<ProjectResponseDTO> pageContent = responseList.subList(start, end);
 
         // Crear y retornar el Page con los datos de paginación
         return new PageImpl<>(pageContent, pageable, responseList.size());

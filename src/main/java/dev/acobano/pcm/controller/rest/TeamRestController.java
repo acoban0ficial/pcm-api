@@ -3,6 +3,7 @@ package dev.acobano.pcm.controller.rest;
 import dev.acobano.pcm.dto.request.TeamPostRequestDTO;
 import dev.acobano.pcm.dto.request.TeamPutRequestDTO;
 import dev.acobano.pcm.dto.response.EmployeeResponseDTO;
+import dev.acobano.pcm.dto.response.ProjectResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.service.ITeamService;
 import jakarta.validation.Valid;
@@ -186,8 +187,69 @@ public class TeamRestController {
                             .getTeamMembers(teamId, outputPage.nextPageable()))
                     .withRel(IanaLinkRelations.NEXT));
         }
+
         return ResponseEntity.ok(pagedModel);
     }
+
+    @GetMapping(
+            value = "/{teamId}/projects",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<PagedModel<ProjectResponseDTO>> getTeamProjects(
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("teamId") UUID teamId,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<ProjectResponseDTO> outputPage = teamService.getTeamProjects(teamId, pageable)
+                .map(dto -> {
+                    // Agregar links HATEOAS a cada miembro:
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                                    .getProjectById(dto.getId()))
+                            .withSelfRel());
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                                    .getTeamProjects(teamId, pageable))
+                            .withRel(IanaLinkRelations.COLLECTION));
+                    return dto;
+                });
+
+        PagedModel<ProjectResponseDTO> pagedModel = PagedModel.of(
+                outputPage.getContent(),
+                new PagedModel.PageMetadata(
+                        outputPage.getSize(),
+                        outputPage.getNumber(),
+                        outputPage.getTotalElements(),
+                        outputPage.getTotalPages()
+                )
+        );
+
+        // Agregar links HATEOAS de la lista:
+        if (outputPage.hasPrevious()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                            .getTeamProjects(teamId, outputPage.previousPageable()))
+                    .withRel(IanaLinkRelations.PREV));
+        }
+
+        pagedModel.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                        .getTeamProjects(teamId, pageable))
+                .withSelfRel());
+
+        if (outputPage.hasNext()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
+                            .getTeamProjects(teamId, outputPage.nextPageable()))
+                    .withRel(IanaLinkRelations.NEXT));
+        }
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
 
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
