@@ -4,9 +4,12 @@ import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.response.TaskResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.service.IProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +43,11 @@ public class ProjectRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ProjectResponseDTO> getProjectById(
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
             @PathVariable("projectId") String projectId
     ) {
         ProjectResponseDTO response = projectService.findProject(UUID.fromString(projectId));
@@ -114,9 +122,14 @@ public class ProjectRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<CustomerResponseDTO> getProjectCustomer(
-            @PathVariable("projectId") UUID projectId
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("projectId") String projectId
     ) {
-        CustomerResponseDTO response = projectService.getProjectCustomer(projectId);
+        CustomerResponseDTO response = projectService.getProjectCustomer(UUID.fromString(projectId));
 
         // Agregar link HATEOAS al cliente:
         response.add(WebMvcLinkBuilder
@@ -131,19 +144,85 @@ public class ProjectRestController {
             value = "/{projectId}/team",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    private ResponseEntity<TeamResponseDTO> getProjectAssignedTeam(
-            @PathVariable("projectId") UUID projectId
+    public ResponseEntity<TeamResponseDTO> getProjectAssignedTeam(
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("projectId") String projectId
     ) {
-        TeamResponseDTO response = projectService.getProjectTeam(projectId);
+        TeamResponseDTO response = projectService.getProjectTeam(UUID.fromString(projectId));
 
         // Agregar link HATEOAS al equipo:
         response.add(WebMvcLinkBuilder
                 .linkTo(WebMvcLinkBuilder.methodOn(TeamRestController.class)
-                        .getTeamById(UUID.fromString(response.getId())))
+                        .getTeamById(response.getId()))
                 .withSelfRel());
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping(
+            value = "/{projectId}/tasks",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<PagedModel<TaskResponseDTO>> getProjectTasks(
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("projectId") String projectId,
+            @PageableDefault Pageable pageable
+    ) {
+        Page<TaskResponseDTO> outputPage = projectService.getProjectTasks(UUID.fromString(projectId), pageable)
+                .map(dto -> {
+                    // Agregar links HATEOAS a cada miembro:
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(TaskRestController.class)
+                                    .getTaskById(dto.getId().toString()))
+                            .withSelfRel());
+                    dto.add(WebMvcLinkBuilder
+                            .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                                    .getProjectTasks(projectId, pageable))
+                            .withRel(IanaLinkRelations.COLLECTION));
+                    return dto;
+                });
+
+        PagedModel<TaskResponseDTO> pagedModel = PagedModel.of(
+                outputPage.getContent(),
+                new PagedModel.PageMetadata(
+                        outputPage.getSize(),
+                        outputPage.getNumber(),
+                        outputPage.getTotalElements(),
+                        outputPage.getTotalPages()
+                )
+        );
+
+        // Agregar links HATEOAS de la lista:
+        if (outputPage.hasPrevious()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                            .getProjectTasks(projectId, outputPage.previousPageable()))
+                    .withRel(IanaLinkRelations.PREV));
+        }
+
+        pagedModel.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                        .getProjectTasks(projectId, pageable))
+                .withSelfRel());
+
+        if (outputPage.hasNext()) {
+            pagedModel.add(WebMvcLinkBuilder
+                    .linkTo(WebMvcLinkBuilder.methodOn(ProjectRestController.class)
+                            .getProjectTasks(projectId, outputPage.nextPageable()))
+                    .withRel(IanaLinkRelations.NEXT));
+        }
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
 
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -175,10 +254,15 @@ public class ProjectRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ProjectResponseDTO> updateProject(
-            @PathVariable("projectId") UUID projectId,
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("projectId") String projectId,
             @Valid @RequestBody ProjectPutRequestDTO request
     ) {
-        ProjectResponseDTO response = projectService.updateProject(projectId, request);
+        ProjectResponseDTO response = projectService.updateProject(UUID.fromString(projectId), request);
 
         // Agregar links HATEOAS:
         response.add(WebMvcLinkBuilder
@@ -195,9 +279,14 @@ public class ProjectRestController {
 
     @DeleteMapping(value = "/{customerId}")
     public ResponseEntity<Void> deleteProject(
-            @PathVariable("customerId") UUID projectId
+            @NotBlank(message = "This field cannot be blank")
+            @Pattern(
+                    regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    message = "This field must be in UUID format"
+            )
+            @PathVariable("customerId") String projectId
     ) {
-        projectService.logicalDeleteProject(projectId);
+        projectService.logicalDeleteProject(UUID.fromString(projectId));
         return ResponseEntity.noContent().build();
     }
 }

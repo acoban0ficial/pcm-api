@@ -4,23 +4,29 @@ import dev.acobano.pcm.dto.request.ProjectPostRequestDTO;
 import dev.acobano.pcm.dto.request.ProjectPutRequestDTO;
 import dev.acobano.pcm.dto.response.CustomerResponseDTO;
 import dev.acobano.pcm.dto.response.ProjectResponseDTO;
+import dev.acobano.pcm.dto.response.TaskResponseDTO;
 import dev.acobano.pcm.dto.response.TeamResponseDTO;
 import dev.acobano.pcm.exception.ProjectNotFoundException;
 import dev.acobano.pcm.mapper.ICustomerMapper;
 import dev.acobano.pcm.mapper.IProjectMapper;
+import dev.acobano.pcm.mapper.ITaskMapper;
 import dev.acobano.pcm.mapper.ITeamMapper;
 import dev.acobano.pcm.model.entity.ProjectEntity;
+import dev.acobano.pcm.model.entity.TaskEntity;
 import dev.acobano.pcm.repository.CustomerJpaRepository;
 import dev.acobano.pcm.repository.ProjectJpaRepository;
 import dev.acobano.pcm.repository.TeamJpaRepository;
 import dev.acobano.pcm.service.IProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +39,7 @@ public class ProjectServiceImpl implements IProjectService {
     private final ICustomerMapper customerMapper;
     private final TeamJpaRepository teamRepository;
     private final ITeamMapper teamMapper;
+    private final ITaskMapper taskMapper;
 
     @Override
     public ProjectResponseDTO findProject(UUID projectId) {
@@ -76,6 +83,30 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         return teamMapper.toResponseDTO(projectOpt.get().getTeam());
+    }
+
+    @Override
+    public Page<TaskResponseDTO> getProjectTasks(UUID projectId, Pageable pageable) {
+        Optional<ProjectEntity> projectOpt = projectRepository.findById(projectId);
+
+        if (projectOpt.isEmpty()) {
+            throw new ProjectNotFoundException("Project not found with ID: " + projectId);
+        }
+
+        Set<TaskEntity> tasks = projectOpt.get().getTasks();
+        List<TaskResponseDTO> responseList = tasks.stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
+
+        // Calcular el rango de elementos para la página actual
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseList.size());
+
+        // Extraer los elementos de la página actual
+        List<TaskResponseDTO> pageContent = responseList.subList(start, end);
+
+        // Crear y retornar el Page con los datos de paginación
+        return new PageImpl<>(pageContent, pageable, responseList.size());
     }
 
     @Override
