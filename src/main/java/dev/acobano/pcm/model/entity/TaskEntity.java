@@ -40,10 +40,10 @@ public class TaskEntity {
     private Priority priority;
 
     @Column(name = "estimated_hours")
-    private Long estimatedHours;
+    private Float estimatedHours;
 
     @Column(name = "spent_hours")
-    private Long spentHours;
+    private Float spentHours;
 
     @Column(name = "due_date")
     private LocalDate dueDate;

@@ -4,6 +4,7 @@ import dev.acobano.pcm.dto.response.error.MainErrorResponseDTO;
 import dev.acobano.pcm.dto.response.error.ValidationErrorResponseDTO;
 import dev.acobano.pcm.exception.CustomerNotFoundException;
 import dev.acobano.pcm.exception.ProjectNotFoundException;
+import dev.acobano.pcm.exception.TaskNotFoundException;
 import dev.acobano.pcm.exception.TeamNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -84,6 +84,21 @@ public class RestExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public MainErrorResponseDTO manageProjectNotFoundException(
             @NotNull ProjectNotFoundException exception,
+            @NotNull HttpServletRequest request
+    ) {
+        log.error(exception.getMessage(), exception);
+        return new MainErrorResponseDTO(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.name(),
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public MainErrorResponseDTO manageTaskNotFoundException(
+            @NotNull TeamNotFoundException exception,
             @NotNull HttpServletRequest request
     ) {
         log.error(exception.getMessage(), exception);
